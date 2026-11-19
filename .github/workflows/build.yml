@@ -110,6 +110,13 @@ jobs:
           if-no-files-found: error
           path: ${{ steps.artifacts_t.outputs.zip_path }}
 
+      - name: Download Wi-Fi firmware blobs
+        run: |
+          mkdir -p kernel_build/nh/firmware
+          curl -fL "https://githubusercontent.com" -o kernel_build/nh/firmware/rt2870.bin
+          curl -fL "https://githubusercontent.com" -o kernel_build/nh/firmware/mt7601u.bin || true
+          curl -fL "https://githubusercontent.com" -o kernel_build/nh/firmware/htc_9271.fw || true
+
       - name: Build NetHunter extras (Vanilla base)
         run: |
           ./kernel_build/scripts/build_nh.sh
