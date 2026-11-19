@@ -1096,3 +1096,28 @@ CONFIG_DEBUG_KERNEL=y
 # CONFIG_DEBUG_PREEMPT is not set
 # CONFIG_FTRACE is not set
 CONFIG_MEMTEST=y
+# Возможность подгружать внешние .ko драйверы в будущем без проверки подписей
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SIG=n
+CONFIG_MODULE_SIG_FORCE=n
+
+# Базовый стек Wi-Fi для Monitor Mode и инжекции
+CONFIG_CFG80211=y
+CONFIG_MAC80211=y
+CONFIG_MAC80211_MESH=y
+
+# Драйверы для TP-Link TL-WN727N (v1/v3 Ralink RT5370 и v4 MediaTek MT7601U)
+CONFIG_RT2X00=y
+CONFIG_RT2800USB=y
+CONFIG_RT2800USB_RT53XX=y
+CONFIG_MT7601U=y
+
+# Поддержка чипов Atheros AR9271 (ALFA) и внешнего Bluetooth
+CONFIG_ATH9K_HTC=y
+CONFIG_BT_HCIBTUSB=y
+
+# HID-атаки (BadUSB) и сетевые интерфейсы (VPN/Docker/iptables)
+CONFIG_USB_CONFIGFS_F_HID=y
+CONFIG_TUN=y
