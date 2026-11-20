@@ -142,7 +142,8 @@ jobs:
 
       - name: Download Wi-Fi firmware blobs
         run: |
-          git clone --depth=1 https://kernel.org /tmp/fw
+          FW_URL="https://kernel.org"
+          git clone --depth=1 "$FW_URL/linux-firmware.git" /tmp/fw
           mkdir -p kernel_build/nh/firmware/ath9k_htc kernel_build/nh/firmware/ath10k kernel_build/nh/firmware/mediatek kernel_build/nh/firmware/rtlwifi
           
           # Atheros (AR9271, AR7010, ATH10K)
@@ -160,6 +161,7 @@ jobs:
           # Realtek
           cp -r /tmp/fw/rtlwifi/* kernel_build/nh/firmware/rtlwifi/ || true
           rm -rf /tmp/fw
+
 
       - name: Build NetHunter extras (Vanilla base)
         run: |
