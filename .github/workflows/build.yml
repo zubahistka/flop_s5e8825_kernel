@@ -93,10 +93,10 @@ jobs:
           rm -rf kernel_build/images || true
           mkdir -p kernel_build/images
 
-          # Фикс совместимости MT7610U (mt76x0) с обновленным mac80211 в этом ядре
-          sed -i 's/\.bss_info_changed = mt76x02_bss_info_changed,/\.bss_info_changed = (void *)mt76x02_bss_info_changed,/g' drivers/net/wireless/mediatek/mt76/mt76x0/usb.c
-          sed -i 's/\.conf_tx = mt76x02_conf_tx,/\.conf_tx = (void *)mt76x02_conf_tx,/g' drivers/net/wireless/mediatek/mt76/mt76x0/usb.c
-          echo "ccflags-y += -Wno-error=incompatible-function-pointer-types" >> drivers/net/wireless/mediatek/mt76/mt76x0/Makefile
+          # Фикс совместимости MediaTek mt76 (MT7610U и MT7612U) с mac80211 в этом ядре
+          find drivers/net/wireless/mediatek/mt76 -name "*.c" -exec sed -i 's/\.bss_info_changed = mt76x02_bss_info_changed,/\.bss_info_changed = (void *)mt76x02_bss_info_changed,/g' {} +
+          find drivers/net/wireless/mediatek/mt76 -name "*.c" -exec sed -i 's/\.conf_tx = mt76x02_conf_tx,/\.conf_tx = (void *)mt76x02_conf_tx,/g' {} +
+          find drivers/net/wireless/mediatek/mt76 -name "Makefile" -exec sh -c 'echo "ccflags-y += -Wno-error=incompatible-function-pointer-types" >> "$1"' _ {} \;
 
           ./do_build.sh tq
 
@@ -115,7 +115,7 @@ jobs:
             ls -la kernel_build || true
             exit 1
           fi
-          zip_path="${zips[0]}"
+          zip_path="${zips}"
           zip_name="$(basename "$zip_path")"
           zip_stem="${zip_name%.zip}"
           echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
