@@ -74,7 +74,7 @@ jobs:
 
           # RTL8188EUS
           rm -rf rtl8188eus
-          git clone --depth=1 -b v5.3.9 "$GH/aircrack-ng/rtl8188eus.git" rtl8188eus
+          git clone --depth=1 -b v5.3.9 "$GH/aircrack-ng/rtl8188eus.git" rtl88188eus 2>/dev/null || git clone --depth=1 -b v5.3.9 "$GH/aircrack-ng/rtl8188eus.git" rtl8188eus
           sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' rtl8188eus/Makefile
           sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' rtl8188eus/Makefile
 
@@ -94,7 +94,8 @@ jobs:
           mkdir -p kernel_build/images
 
           # Фикс совместимости MediaTek mt76 (MT7610U и MT7612U) с ядром 5.10
-          find drivers/net/wireless/mediatek/mt76 -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's/->deflink\./->/g; s/\.deflink\././g; s/netif_napi_add_tx(/netif_tx_napi_add(/g' {} +
+          sed -i '/#define _LINUX_NETDEVICE_H/a #define netif_napi_add_tx(dev, napi, poll) netif_tx_napi_add(dev, napi, poll, NAPI_POLL_WEIGHT)' include/linux/netdevice.h
+          find drivers/net/wireless/mediatek/mt76 -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's/->deflink\./->/g; s/\.deflink\././g' {} +
           find drivers/net/wireless/mediatek/mt76 -name "*.c" -exec sed -i 's/\.bss_info_changed = mt76x02_bss_info_changed,/\.bss_info_changed = (void *)mt76x02_bss_info_changed,/g' {} +
           find drivers/net/wireless/mediatek/mt76 -name "*.c" -exec sed -i 's/\.conf_tx = mt76x02_conf_tx,/\.conf_tx = (void *)mt76x02_conf_tx,/g' {} +
           find drivers/net/wireless/mediatek/mt76 -name "Makefile" -exec sh -c 'echo "ccflags-y += -Wno-error=incompatible-function-pointer-types" >> "$1"' _ {} \;
@@ -116,7 +117,7 @@ jobs:
             ls -la kernel_build || true
             exit 1
           fi
-          zip_path="${zips}"
+          zip_path="${zips[0]}"
           zip_name="$(basename "$zip_path")"
           zip_stem="${zip_name%.zip}"
           echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
