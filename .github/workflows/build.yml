@@ -94,7 +94,7 @@ jobs:
           mkdir -p kernel_build/images
 
           # Фикс совместимости MediaTek mt76 (MT7610U и MT7612U) с ядром 5.10
-          sed -i 's/mt76x02_poll_tx);/mt76x02_poll_tx, NAPI_POLL_WEIGHT);/g' drivers/net/wireless/mediatek/mt76/mt76x02_mmio.c
+          sed -i 's/netif_napi_add_tx(/netif_tx_napi_add(/g; s/mt76x02_poll_tx);/mt76x02_poll_tx, NAPI_POLL_WEIGHT);/g' drivers/net/wireless/mediatek/mt76/mt76x02_mmio.c
           find drivers/net/wireless/mediatek/mt76 -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's/->deflink\./->/g; s/\.deflink\././g' {} +
           find drivers/net/wireless/mediatek/mt76 -name "*.c" -exec sed -i 's/\.bss_info_changed = mt76x02_bss_info_changed,/\.bss_info_changed = (void *)mt76x02_bss_info_changed,/g' {} +
           find drivers/net/wireless/mediatek/mt76 -name "*.c" -exec sed -i 's/\.conf_tx = mt76x02_conf_tx,/\.conf_tx = (void *)mt76x02_conf_tx,/g' {} +
