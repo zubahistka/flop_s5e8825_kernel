@@ -55,7 +55,7 @@ jobs:
             fi
           fi
 
-       - name: Add External Realtek Wi-Fi Drivers
+      - name: Add External Realtek Wi-Fi Drivers
         run: |
           cd drivers/net/wireless/realtek
           GH="https://github.com"
@@ -84,7 +84,6 @@ jobs:
           sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' rtl8192eu/Makefile
           sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' rtl8192eu/Makefile
 
-
       - name: Build (Vanilla)
         run: |
           rm -f kernel_build/*.zip kernel_build/*.tar kernel_build/TARs_*.zip log.txt || true
@@ -107,7 +106,7 @@ jobs:
             ls -la kernel_build || true
             exit 1
           fi
-          zip_path="${zips[0]}"
+          zip_path="${zips}"
           zip_name="$(basename "$zip_path")"
           zip_stem="${zip_name%.zip}"
           echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
@@ -142,8 +141,9 @@ jobs:
 
       - name: Download Wi-Fi firmware blobs
         run: |
-          FW_URL="https://kernel.org"
-          git clone --depth=1 "$FW_URL/linux-firmware.git" /tmp/fw
+          FW_HOST="https://git.kernel.org"
+          FW_PATH="/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
+          git clone --depth=1 "${FW_HOST}${FW_PATH}" /tmp/fw
           mkdir -p kernel_build/nh/firmware/ath9k_htc kernel_build/nh/firmware/ath10k kernel_build/nh/firmware/mediatek kernel_build/nh/firmware/rtlwifi
           
           # Atheros (AR9271, AR7010, ATH10K)
@@ -161,7 +161,6 @@ jobs:
           # Realtek
           cp -r /tmp/fw/rtlwifi/* kernel_build/nh/firmware/rtlwifi/ || true
           rm -rf /tmp/fw
-
 
       - name: Build NetHunter extras (Vanilla base)
         run: |
