@@ -55,6 +55,34 @@ jobs:
             fi
           fi
 
+      - name: Add External Realtek Wi-Fi Drivers
+        run: |
+          cd drivers/net/wireless/realtek
+
+          # RTL8812AU / 8811AU / 8821AU
+          rm -rf rtl8812au
+          git clone --depth=1 -b v5.6.4.2 https://github.com rtl8812au
+          sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' rtl8812au/Makefile
+          sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' rtl8812au/Makefile
+
+          # RTL8814AU
+          rm -rf rtl8814au
+          git clone --depth=1 https://github.com rtl8814au
+          sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' rtl8814au/Makefile
+          sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' rtl8814au/Makefile
+
+          # RTL8188EUS
+          rm -rf rtl8188eus
+          git clone --depth=1 -b v5.3.9 https://github.com rtl8188eus
+          sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' rtl8188eus/Makefile
+          sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' rtl8188eus/Makefile
+
+          # RTL8192EU
+          rm -rf rtl8192eu
+          git clone --depth=1 https://github.com rtl8192eu
+          sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' rtl8192eu/Makefile
+          sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' rtl8192eu/Makefile
+
       - name: Build (Vanilla)
         run: |
           rm -f kernel_build/*.zip kernel_build/*.tar kernel_build/TARs_*.zip log.txt || true
@@ -112,11 +140,24 @@ jobs:
 
       - name: Download Wi-Fi firmware blobs
         run: |
-          mkdir -p kernel_build/nh/firmware
-          curl -fL "https://kernel.org" -o kernel_build/nh/firmware/rt2870.bin || true
-          curl -fL "https://kernel.org" -o kernel_build/nh/firmware/mt7601u.bin || true
-          curl -fL "https://kernel.org" -o kernel_build/nh/firmware/htc_9271.fw || true
-
+          git clone --depth=1 https://kernel.org /tmp/fw
+          mkdir -p kernel_build/nh/firmware/ath9k_htc kernel_build/nh/firmware/ath10k kernel_build/nh/firmware/mediatek kernel_build/nh/firmware/rtlwifi
+          
+          # Atheros (AR9271, AR7010, ATH10K)
+          cp -r /tmp/fw/ath9k_htc/* kernel_build/nh/firmware/ath9k_htc/ || true
+          cp -f /tmp/fw/htc_9271.fw /tmp/fw/htc_7010.fw kernel_build/nh/firmware/ || true
+          cp -r /tmp/fw/ath10k/* kernel_build/nh/firmware/ath10k/ || true
+          
+          # MediaTek (MT7601U, MT7610U, MT7612U)
+          cp -f /tmp/fw/mt7601u.bin /tmp/fw/mt7650.bin /tmp/fw/mt7662.bin /tmp/fw/mt7662_rom_patch.bin kernel_build/nh/firmware/ || true
+          cp -r /tmp/fw/mediatek/* kernel_build/nh/firmware/mediatek/ || true
+          
+          # Ralink (RT3070, RT3572, RT5370, RT5372, RT5572, RT73)
+          cp -f /tmp/fw/rt2870.bin /tmp/fw/rt3070.bin /tmp/fw/rt3071.bin /tmp/fw/rt73.bin kernel_build/nh/firmware/ || true
+          
+          # Realtek
+          cp -r /tmp/fw/rtlwifi/* kernel_build/nh/firmware/rtlwifi/ || true
+          rm -rf /tmp/fw
 
       - name: Build NetHunter extras (Vanilla base)
         run: |
