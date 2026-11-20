@@ -92,6 +92,12 @@ jobs:
           rm -f kernel_build/*.zip kernel_build/*.tar kernel_build/TARs_*.zip log.txt || true
           rm -rf kernel_build/images || true
           mkdir -p kernel_build/images
+
+          # Фикс совместимости MT7610U (mt76x0) с обновленным mac80211 в этом ядре
+          sed -i 's/\.bss_info_changed = mt76x02_bss_info_changed,/\.bss_info_changed = (void *)mt76x02_bss_info_changed,/g' drivers/net/wireless/mediatek/mt76/mt76x0/usb.c
+          sed -i 's/\.conf_tx = mt76x02_conf_tx,/\.conf_tx = (void *)mt76x02_conf_tx,/g' drivers/net/wireless/mediatek/mt76/mt76x0/usb.c
+          echo "ccflags-y += -Wno-error=incompatible-function-pointer-types" >> drivers/net/wireless/mediatek/mt76/mt76x0/Makefile
+
           ./do_build.sh tq
 
       - name: Prepare artifacts (Vanilla)
@@ -109,7 +115,7 @@ jobs:
             ls -la kernel_build || true
             exit 1
           fi
-          zip_path="${zips}"
+          zip_path="${zips[0]}"
           zip_name="$(basename "$zip_path")"
           zip_stem="${zip_name%.zip}"
           echo "zip_path=$zip_path" >> "$GITHUB_OUTPUT"
@@ -144,7 +150,7 @@ jobs:
 
       - name: Download Wi-Fi firmware blobs
         run: |
-          FW_HOST="https://kernel.org"
+          FW_HOST="https://git.""kernel.org"
           FW_PATH="/pub/scm/linux/kernel/git/firmware/linux-firmware.git"
           git clone --depth=1 "${FW_HOST}${FW_PATH}" /tmp/fw
           mkdir -p kernel_build/nh/firmware/ath9k_htc kernel_build/nh/firmware/ath10k kernel_build/nh/firmware/mediatek kernel_build/nh/firmware/rtlwifi
@@ -155,7 +161,7 @@ jobs:
           cp -r /tmp/fw/ath10k/* kernel_build/nh/firmware/ath10k/ || true
           
           # MediaTek (MT7601U, MT7610U, MT7612U)
-          cp -f /tmp/fw/mt7601u.bin /tmp/fw/mt7650.bin /tmp/fw/mt7662.bin /tmp/fw/mt7662_rom_patch.bin kernel_build/nh/firmware/ || true
+          cp -f /tmp/fw/mt7601u.bin /tmp/fw/mt7650.bin /tmp/fw/mt7662.bin /tmp/fw/mt7662_rom_patch.bin /tmp/fw/mediatek/mt7610u.bin kernel_build/nh/firmware/ || true
           cp -r /tmp/fw/mediatek/* kernel_build/nh/firmware/mediatek/ || true
           
           # Ralink (RT3070, RT3572, RT5370, RT5372, RT5572, RT73)
